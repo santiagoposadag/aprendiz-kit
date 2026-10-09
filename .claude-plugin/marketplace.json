@@ -1,0 +1,14 @@
+{
+  "name": "aprendiz-kit",
+  "description": "Agents, skills and review discipline for Claude Code.",
+  "owner": {
+    "name": "Santiago Posada"
+  },
+  "plugins": [
+    {
+      "name": "aprendiz-kit",
+      "source": "./",
+      "description": "A fleet of agents, an orchestration skill and a review discipline, accumulated by building one product and shaped by what went wrong doing it."
+    }
+  ]
+}

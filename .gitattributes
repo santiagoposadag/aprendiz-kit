@@ -1,0 +1,2 @@
+# Keep LF everywhere so the checksums in docs/ATTRIBUTION.md hold on every platform.
+* text=auto eol=lf

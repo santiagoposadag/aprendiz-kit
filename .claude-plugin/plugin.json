@@ -1,0 +1,11 @@
+{
+  "name": "aprendiz-kit",
+  "displayName": "Aprendiz Kit",
+  "description": "A fleet of agents, an orchestration skill and a review discipline, accumulated by building one product and shaped by what went wrong doing it.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Santiago Posada"
+  },
+  "license": "MIT",
+  "keywords": ["agents", "subagents", "orchestration", "code-review", "verification"]
+}
