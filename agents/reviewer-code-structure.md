@@ -1,5 +1,5 @@
 ---
-name: reviewer-estructura
+name: reviewer-code-structure
 description: >
   Reads a whole codebase, or one area of it, for the shape of the thing rather than
   whether it works: duplicated domain flows that want to be one, layers reaching past

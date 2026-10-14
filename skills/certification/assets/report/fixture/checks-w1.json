@@ -1,0 +1,55 @@
+{
+  "walker": "w1",
+  "commit": "0000000",
+  "date": "2026-01-15",
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "Borrow a tool",
+      "checks": [
+        {
+          "id": "J01.1",
+          "title": "A member sees only the tools that are available",
+          "users": ["member A"],
+          "method": ["seed", "screen"],
+          "verdict": "PASS",
+          "cases": ["B-01"],
+          "screenshots": [
+            { "file": "J01/01a-available-tools-desktop.png", "caption": "Catalogue: 6 seeded tools, the 2 on loan absent" }
+          ],
+          "note": ""
+        },
+        {
+          "id": "J01.2",
+          "title": "A loan request reaches the steward's queue",
+          "users": ["member A", "steward"],
+          "method": ["cross"],
+          "verdict": "PASS",
+          "cases": ["B-02", "B-03"],
+          "screenshots": [
+            { "file": "J01/02a-steward-queue-before-desktop.png", "caption": "Steward: queue holds 1 request" },
+            { "file": "J01/02b-member-sends-request-desktop.png", "caption": "Member A requests the drill" },
+            { "file": "J01/02c-steward-queue-after-desktop.png", "caption": "Steward: queue holds 2, drill on top" }
+          ],
+          "note": "Member A acted; the steward saw it in a separate browser context."
+        },
+        {
+          "id": "J01.3",
+          "title": "The request form works at phone width",
+          "users": ["member A"],
+          "method": ["screen"],
+          "verdict": "PARTIAL",
+          "cases": ["B-04"],
+          "screenshots": [
+            { "file": "J01/03a-request-form-phone.png", "caption": "390 px: one column, submit reachable" }
+          ],
+          "note": "Emulated phone viewport; no physical device was walked."
+        }
+      ]
+    }
+  ],
+  "defects": [],
+  "consumedState": "One loan request for the drill, still pending. Disposable with the stack.",
+  "consoleNetwork": "Only an expected 401 on the session probe before sign-in.",
+  "unverifiable": "None."
+}

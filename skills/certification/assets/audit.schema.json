@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "audit.schema.json",
+  "title": "audit-<walker>.json",
+  "description": "One auditor's judgement of one walker's checks-<walker>.json, row by row, from the images alone. Written by certifier-auditor. The orchestrator may complete a row after opening an orphan image, and says so in completedBy.",
+  "type": "object",
+  "required": ["walker", "checks", "defects", "summary"],
+  "properties": {
+    "walker": { "type": "string", "description": "Same id as the checks file audited." },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/row" }
+    },
+    "defects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/row" }
+    },
+    "summary": {
+      "type": "string",
+      "description": "Counts per support value, then the whole-file checks: missing images, orphan images by name, commit drift, captions or strips the page contradicts, and anything visible in an image that nobody reported."
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "required": ["id", "support"],
+      "properties": {
+        "id": { "type": "string", "description": "The check or defect id, exactly as in checks-<walker>.json." },
+        "support": {
+          "enum": ["SUPPORTED", "PARTIAL", "UNSUPPORTED"],
+          "description": "SUPPORTED: the verdict follows from what is visible in the cited images. PARTIAL: part of the claim is visible, part lives only in the strip, the note or below the fold. UNSUPPORTED: the images do not show what the verdict needs, or the row can only be decided by walking (the reason says what a walk would have to look at)."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Required unless SUPPORTED. One or two sentences naming the image and what is or is not on it."
+        },
+        "completedBy": {
+          "enum": ["auditor", "orchestrator"],
+          "description": "Omitted means auditor. orchestrator: the gap was closed by citing an image already on disk, after opening it."
+        }
+      }
+    }
+  }
+}

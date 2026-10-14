@@ -1,0 +1,46 @@
+{
+  "groups": [
+    { "id": "seed", "name": "What the seed brings (read-only, walk first)" },
+    { "id": "loans", "name": "Borrowing and returning" }
+  ],
+  "cases": [
+    {
+      "id": "B-01",
+      "group": "seed",
+      "actor": "member",
+      "story": "F001-US1-1",
+      "title": "The catalogue lists only the tools that are available",
+      "steps": [
+        "Open the home page in a private window and sign in as member A.",
+        "Open Tools from the menu."
+      ],
+      "expected": "Six tools. The two the seed puts on loan (ladder, sander) are not listed.",
+      "ref": "FR-002"
+    },
+    {
+      "id": "B-02",
+      "group": "loans",
+      "actor": "member",
+      "story": "F001-US2-1",
+      "title": "A member asks for a tool",
+      "steps": [
+        "As member A, open Tools and choose the drill.",
+        "Press Request and confirm."
+      ],
+      "expected": "The drill shows Requested, and My loans lists it as pending.",
+      "note": "Consumes the drill: it stays requested until the steward answers (B-03)."
+    },
+    {
+      "id": "B-03",
+      "group": "loans",
+      "actor": "steward",
+      "story": "F001-US2-2",
+      "title": "The request reaches the steward's queue",
+      "steps": [
+        "In another browser, sign in as the steward.",
+        "Open Requests from the menu."
+      ],
+      "expected": "The queue holds 2 requests (1 seeded, 1 from B-02), the drill on top with member A's name."
+    }
+  ]
+}

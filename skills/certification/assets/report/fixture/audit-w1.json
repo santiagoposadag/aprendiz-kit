@@ -1,0 +1,10 @@
+{
+  "walker": "w1",
+  "checks": [
+    { "id": "J01.1", "support": "SUPPORTED", "reason": "Six tools visible, none of the two seeded as on loan." },
+    { "id": "J01.2", "support": "PARTIAL", "reason": "Before and after are the steward's own screens, but the count of 2 is only in the strip; the queue's second row is below the fold." },
+    { "id": "J01.3", "support": "SUPPORTED", "reason": "PARTIAL is right: the image is an emulated viewport, as the note says." }
+  ],
+  "defects": [],
+  "summary": "3 checks: 2 SUPPORTED, 1 PARTIAL. All cited images exist, no orphans, commit matches."
+}

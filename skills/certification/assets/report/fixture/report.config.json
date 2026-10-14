@@ -1,0 +1,17 @@
+{
+  "lang": "en",
+  "title": "Tool library certification",
+  "heading": "The tool library, as it stands",
+  "eyebrow": "Product certification · synthetic fixture",
+  "lede": "A synthetic fixture for the report generator. Every row is a promise of a fictional product, walked in a browser by test users; the dark strip on each screenshot names who is looking and what was read at that instant.",
+  "environment": "local stack with the seed, two isolated stacks",
+  "benchSize": 8,
+  "journeys": {
+    "J01": { "title": "Borrow a tool", "summary": "A member finds an available tool and asks for it; the steward sees the request." },
+    "J02": { "title": "Return and history", "summary": "Returning frees the tool for others; nobody reads another member's history." }
+  },
+  "limits": [
+    { "title": "Real identity provider.", "text": "Sign-in used the local stack's simulated provider (case B-08 left out)." },
+    { "title": "Physical phones.", "text": "Phone width was emulated at 390 × 844." }
+  ]
+}

@@ -1,2 +1,7 @@
 # Keep LF everywhere so the checksums in docs/ATTRIBUTION.md hold on every platform.
 * text=auto eol=lf
+
+# Screenshots and fixtures are binary; never normalise them.
+*.png binary
+*.webp binary
+*.jpg binary
