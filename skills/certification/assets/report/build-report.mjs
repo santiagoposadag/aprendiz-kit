@@ -133,6 +133,43 @@ const problems = [];
 const need = (cond, where, msg) => { if (!cond) problems.push(`${where}: ${msg}`); };
 const isStr = (v) => typeof v === 'string';
 
+// The palette and font stacks go into the page's <style> as they are, so they are held to
+// what a colour or a font list can look like: nothing that closes a rule or the element.
+const COLOR = /^(#[0-9a-f]{3,8}|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix)\([0-9a-z.,%\s/-]*\)|[a-z]+)$/i;
+const FONT_STACK = /^[^<>;{}()\\]*$/;
+for (const scheme of ['light', 'dark']) {
+  for (const [k, v] of Object.entries(cfg.palette?.[scheme] ?? {})) {
+    need(/^[a-z][a-z0-9]*$/i.test(k), 'config', `palette.${scheme} key "${k}" is not a plain token name`);
+    need(isStr(v) && COLOR.test(v.trim()), 'config', `palette.${scheme}.${k} "${v}" is not a colour`);
+  }
+}
+for (const k of ['display', 'body', 'mono']) need(isStr(cfg.fonts?.[k]) && FONT_STACK.test(cfg.fonts[k]), 'config', `fonts.${k} must be a plain font list`);
+if (cfg.fonts?.stylesheet != null) {
+  let protocol = null;
+  try {
+    protocol = new URL(cfg.fonts.stylesheet).protocol;
+  } catch {}
+  need(protocol === 'https:', 'config', 'fonts.stylesheet must be an https: URL');
+}
+
+// A screenshot must be an image inside the folder of the file that cites it. The JSON comes
+// from an agent that read untrusted screens; a path that climbs out of its folder would put
+// whatever it names into a page meant to be shared.
+const IMAGE = /\.(png|jpe?g)$/i;
+const real = (p) => {
+  try {
+    return fs.realpathSync(p);
+  } catch {
+    return path.resolve(p);
+  }
+};
+function screenshotProblem(dir, file) {
+  if (!IMAGE.test(file)) return 'is not a .png or .jpg';
+  const rel = path.relative(real(dir), real(path.resolve(dir, file)));
+  if (!rel || rel === '..' || rel.startsWith('..' + path.sep) || path.isAbsolute(rel)) return 'is outside the folder of the file that cites it';
+  return null;
+}
+
 function validateChecks(d, where) {
   need(isStr(d.walker) && d.walker, where, 'walker missing');
   need(Array.isArray(d.journeys), where, 'journeys must be an array');
@@ -195,6 +232,12 @@ for (const dir of opt.src) {
         seenIds.set(c.id, where);
         c.audit = audBy.get(c.id) ?? null;
         for (const s of c.screenshots ?? []) {
+          if (!isStr(s.file)) continue; // already reported by validateChecks
+          const bad = screenshotProblem(dir, s.file);
+          if (bad) {
+            problems.push(`${where} ${c.id}: screenshot "${s.file}" ${bad}`);
+            continue;
+          }
           s.src = path.resolve(dir, s.file);
           cited.add(s.src);
           if (!fs.existsSync(s.src)) missing.push(`${where} ${c.id}: ${s.file}`);
@@ -204,7 +247,12 @@ for (const dir of opt.src) {
       journeys.set(j.id, { ...j, checks: [...(prev?.checks ?? []), ...(j.checks ?? [])] });
     }
     for (const df of data.defects ?? []) {
-      const src = df.screenshot ? path.resolve(dir, df.screenshot) : null;
+      let src = null;
+      if (df.screenshot !== undefined) {
+        const bad = !isStr(df.screenshot) ? 'is not a path' : screenshotProblem(dir, df.screenshot);
+        if (bad) problems.push(`${where} ${df.id}: screenshot "${df.screenshot}" ${bad}`);
+        else src = path.resolve(dir, df.screenshot);
+      }
       if (src) {
         cited.add(src);
         if (!fs.existsSync(src)) missing.push(`${where} ${df.id}: ${df.screenshot}`);

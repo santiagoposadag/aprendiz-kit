@@ -61,7 +61,7 @@
                     "properties": {
                       "file": {
                         "type": "string",
-                        "description": "Path relative to this JSON file: <journey>/<nn><letter>-<slug>-<desktop|phone>.png. The generator fails if it does not exist."
+                        "description": "Path relative to this JSON file: <journey>/<nn><letter>-<slug>-<desktop|phone>.png. A .png or .jpg inside this file's folder; the generator fails (exit 3) on anything else, and (exit 2) if it does not exist."
                       },
                       "caption": { "type": "string", "description": "Ten words or fewer: what the image shows, not what the walker hoped." },
                       "device": { "enum": ["desktop", "phone"], "description": "Optional; inferred from a -phone suffix in the file name." }
@@ -90,7 +90,7 @@
           "steps": { "type": "string", "description": "Who, where, what they did: enough to reproduce." },
           "expected": { "type": "string", "description": "What the spec promises (the spec, not the bench, when they disagree)." },
           "actual": { "type": "string" },
-          "screenshot": { "type": "string", "description": "One image that shows it, relative to this file." }
+          "screenshot": { "type": "string", "description": "One image that shows it, relative to this file: a .png or .jpg inside this file's folder." }
         }
       }
     },

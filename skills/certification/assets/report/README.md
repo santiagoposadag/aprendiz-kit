@@ -17,7 +17,9 @@ node check-report.mjs <dir>/report.html        # or <dir>/index.html in publish 
 It exits **2** when a cited screenshot is missing and **3** when a file breaks the contract
 (`../checks.schema.json`, `../audit.schema.json`): an unknown verdict or method, a check with
 no case, a non-UNVERIFIABLE check with no screenshot, a duplicate check id, an audit row that
-is not SUPPORTED and gives no reason. Orphan screenshots — on disk, cited by no row — are
+is not SUPPORTED and gives no reason, a screenshot that is not a `.png`/`.jpg` inside the
+folder of the file citing it, or a configuration colour, font list or font URL that is not
+plainly one (they go into the page's `<style>` as written; the font URL must be `https:`). Orphan screenshots — on disk, cited by no row — are
 listed on stderr; closing a gap from one is the orchestrator's call, after opening it.
 
 ## The check that ships with it
@@ -68,4 +70,5 @@ screenshots.
 ```sh
 node build-report.mjs --out /tmp/cert-fixture --config fixture/report.config.json fixture
 node check-report.mjs /tmp/cert-fixture/report.html
+node --test build-report.test.mjs   # what the generator must refuse; no dependencies
 ```

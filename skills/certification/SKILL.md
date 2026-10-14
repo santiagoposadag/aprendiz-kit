@@ -112,7 +112,8 @@ Each one cost something on the round this was learned from.
 1. Confirm `verifier-e2e` ran and its findings are fixed or filed.
 2. Brief one `certifier-e2e` with the story's scenarios, the spec, the stack and seed commands,
    and where the report and images go (`assets/story-report-template.md`).
-3. When it reports, brief one `certifier-auditor` with the same contract and the report.
+3. When it reports, brief one `certifier-auditor` with the same contract, the report and the
+   commit being certified — the auditor runs no commands, so it cannot look the commit up.
 4. Open the images behind every row the auditor did not support, and any you doubt. Close
    gaps from orphans where an image on disk proves the row; send back for a re-walk otherwise.
 5. Commit the report and its images with the audit line filled.
@@ -127,7 +128,8 @@ Each one cost something on the round this was learned from.
    each on its own checkout and stack.
 4. Fill `assets/walker-brief-common.md` once and `assets/walker-brief.md` per walker, with the
    cross-user checks written out. Launch the walkers in parallel.
-5. As each walker reports, launch its auditor on its `checks-<walker>.json`. Do not wait for
+5. As each walker reports, launch its auditor on its `checks-<walker>.json`, naming the
+   commit being certified. Do not wait for
    the slowest walker.
 6. Reconcile: read every audit, open the images behind each gap, open the orphans the auditor
    listed, complete rows from them where they prove the claim (rule 9). Log any defect you
