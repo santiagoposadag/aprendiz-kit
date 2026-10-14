@@ -23,9 +23,9 @@ arrive on their own.
 |---|---|---|---|---|
 | `skills/judgment-day/SKILL.md` | `~/.claude/skills/judgment-day/SKILL.md` | 1.4 | unchanged | `1454be78206c5221` |
 | `skills/judgment-day/references/prompts-and-formats.md` | `~/.claude/skills/judgment-day/references/prompts-and-formats.md` | — | unchanged | `bce23691898d751f` |
-| `agents/jd-judge-a.md` | `~/.claude/agents/jd-judge-a.md` | — | adapted | `f5d71a091fa81c44` |
-| `agents/jd-judge-b.md` | `~/.claude/agents/jd-judge-b.md` | — | adapted | `563ef64fe470caf8` |
-| `agents/jd-fix-agent.md` | `~/.claude/agents/jd-fix-agent.md` | — | adapted | `7c41b28e6e3e6159` |
+| `agents/jd-judge-a.md` | `~/.claude/agents/jd-judge-a.md` | — | adapted | `e1e71c43de392d4e` |
+| `agents/jd-judge-b.md` | `~/.claude/agents/jd-judge-b.md` | — | adapted | `e9dad7a8fa2bd295` |
+| `agents/jd-fix-agent.md` | `~/.claude/agents/jd-fix-agent.md` | — | adapted | `167c0106e6c1e17f` |
 
 The checksum column is the kit's own copy, not upstream's, and it is computed over
 the file with LF line endings — `.gitattributes` keeps it that way on every platform.
@@ -46,6 +46,10 @@ the kit's copies differ only in this:
   report to be delivered through it. The same paragraph closes every agent in the kit.
 - The two judges also get a paragraph forbidding contact with the other judge: two
   verdicts that influenced each other are one verdict.
+- Each engram tool is listed under both names it can have: `mcp__engram__*`, which is
+  what engram's supported setup registers (`engram setup claude-code`), and
+  `mcp__plugin_engram_engram__*`, which upstream lists. A name that does not resolve is
+  ignored, so the pair works on either setup.
 
 Upstream has since rewritten the body of these agents around a review-ledger
 contract. The kit's copies predate that and do not include it.
@@ -64,18 +68,24 @@ adapted agents, re-apply the changes listed above after copying.
 
 ## Declared as a dependency, not copied
 
-**Engram** — persistent memory across sessions, provided by its own MCP plugin. Its
-protocol is injected into a session by that plugin, not by this kit, and several
-agents here list `mcp__plugin_engram_engram__*` tools. On a machine without it those
-tool names simply do not resolve; the agents still work, and lose only the ability to
-recall what earlier sessions learned.
+**Engram** — persistent memory across sessions: a binary, its own plugin (hooks and the
+memory protocol) and an MCP server that the plugin does not register by itself. Its
+protocol is injected into a session by that plugin, not by this kit, and the `jd-*`
+agents list its tools as `mcp__engram__*` and `mcp__plugin_engram_engram__*`. On a
+machine without it those tool names simply do not resolve; the agents still work, and
+lose only the ability to recall what earlier sessions learned. The README has the
+install steps and `skills/doctor/` checks them.
 
 It is not copied because copying a protocol whose implementation lives elsewhere
 would be copying a promise this kit cannot keep.
 
-**Playwright MCP** — the browser that `verifier-e2e` and `verifier-std` drive, through
-its `mcp__playwright__*` tools. Without it those two agents cannot walk a browser and
-should report that part of their work as unverifiable.
+**Playwright MCP** — the browser that `verifier-e2e`, `verifier-std` and
+`certifier-e2e` drive. Bundled by reference: `plugin.json` starts `@playwright/mcp` at a
+pinned version through `npx`, so nothing is copied and the version only moves when this
+file does. The agents grant the whole server, under the name the kit's copy gets
+(`mcp__plugin_aprendiz-kit_playwright`) and the name a user's own copy gets
+(`mcp__playwright`). Without it those agents cannot walk a browser and should report that
+part of their work as unverifiable.
 
 ## Written for this kit
 

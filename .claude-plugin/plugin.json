@@ -7,5 +7,11 @@
     "name": "Santiago Posada"
   },
   "license": "MIT",
-  "keywords": ["agents", "subagents", "orchestration", "code-review", "verification", "certification", "qa"]
+  "keywords": ["agents", "subagents", "orchestration", "code-review", "verification", "certification", "qa"],
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@0.0.83", "--isolated"]
+    }
+  }
 }

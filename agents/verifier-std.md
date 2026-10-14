@@ -6,7 +6,7 @@ description: >
   probes; drop to verifier-light for a single mechanical check.
 model: sonnet
 effort: medium
-tools: Read, Grep, Glob, Bash, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_type, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_wait_for, mcp__playwright__browser_close, SendMessage
+tools: Read, Grep, Glob, Bash, mcp__playwright, mcp__plugin_aprendiz-kit_playwright, SendMessage
 ---
 
 You execute a verification plan and report evidence. Each probe states what to run
