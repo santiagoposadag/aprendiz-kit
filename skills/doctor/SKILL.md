@@ -42,8 +42,9 @@ script is the check, and a check that depends on a model's reading is not one.
 
 - **Claude Code**: the `claude` CLI is on PATH.
 - **Playwright** (bundled by the kit's `plugin.json`): Node.js 18+, `npx`, Google Chrome
-  (the browser `@playwright/mcp` drives by default), the kit's plugin enabled, and no second
-  `playwright` server competing with it.
+  (the browser `@playwright/mcp` drives by default), the kit's plugin enabled, no second
+  `playwright` server competing with it, and `.playwright-mcp/` — where the server saves its
+  files — ignored by git when the current directory is a repository.
 - **Engram** (declared, not bundled — see the README): the `engram` binary, the engram
   plugin (hooks, session tracking, compaction recovery), the engram MCP server registered
   and connected (`engram setup claude-code` — the plugin alone does not register it), `jq`

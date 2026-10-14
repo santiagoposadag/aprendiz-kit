@@ -158,6 +158,19 @@ if (engramBin) {
   add('recommended', 'Engram', "engram's own diagnostics (engram doctor)", doc.ok && /^ok$/i.test(String(status)), `status: ${status}`, 'engram doctor   (read its "next:" lines)');
 }
 
+// The server writes snapshots and screenshots to .playwright-mcp/ in the session's working
+// directory. In a repository that does not ignore it, every walk leaves untracked files.
+const inRepo = which('git') && run('git', ['rev-parse', '--is-inside-work-tree']).ok;
+const ignored = inRepo && run('git', ['check-ignore', '-q', '.playwright-mcp/']).ok;
+add(
+  'optional',
+  'Playwright',
+  '.playwright-mcp/ ignored by git (where the browser server saves its files)',
+  !inRepo || ignored,
+  !inRepo ? 'not a git repository here; nothing to ignore' : ignored ? 'ignored' : 'not ignored: each browser walk leaves untracked files in this repository',
+  'echo .playwright-mcp/ >> .gitignore',
+);
+
 // ---------- Certification (only whole-product rounds and the report) ----------
 const pw = resolveFrom('playwright') ?? resolveFrom('@playwright/test');
 add(

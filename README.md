@@ -77,7 +77,9 @@ only when a critical check fails.
 pinned version through `npx`, in an isolated profile, and drives the installed Google
 Chrome. `verifier-e2e`, `verifier-std` and a lone `certifier-e2e` use it; without Node.js 18+
 or Chrome they cannot walk a screen and should say so rather than guess. If you already run
-your own `playwright` server, the agents accept it too. Certifiers running in parallel drive
+your own `playwright` server, the agents accept it too. The server saves its snapshots and
+screenshots under `.playwright-mcp/` in the directory the session runs in, so add that
+folder to the project's `.gitignore`; the doctor tells you when it is not. Certifiers running in parallel drive
 Playwright from their own scripts instead — a shared browser signs one walker out when
 another signs in — so a project that certifies whole rounds needs `playwright` or
 `@playwright/test` installed. The certification report's check uses it too, and its WebP
