@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "checks.schema.json",
+  "title": "checks-<walker>.json",
+  "description": "What one certifier walked, one file per walker. Written by certifier-e2e, read by certifier-auditor and by the report generator. Verdict and method values are canonical tokens; the words a reader sees come from the report's strings, so a project can localise them without touching this contract.",
+  "type": "object",
+  "required": ["walker", "commit", "date", "journeys", "defects", "consumedState", "consoleNetwork", "unverifiable"],
+  "properties": {
+    "walker": {
+      "type": "string",
+      "description": "The walker's id, as in the file name: w1, w2. The orchestrator uses w0 for defects it logs itself."
+    },
+    "commit": { "type": "string", "description": "Short hash of the commit certified (git rev-parse --short HEAD in the walker's checkout)." },
+    "date": { "type": "string", "format": "date", "description": "YYYY-MM-DD of the walk." },
+    "journeys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "checks"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Journey id from the plan, e.g. J01. The same id may appear in two walkers' files; the generator merges them."
+          },
+          "title": { "type": "string" },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "users", "method", "verdict", "cases", "screenshots"],
+              "properties": {
+                "id": { "type": "string", "description": "<journey>.<n>, unique across every walker: J01.1, J01.2." },
+                "title": { "type": "string", "description": "The idea proved, twelve words or fewer, in the report's language." },
+                "users": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Every test user whose screen appears in the evidence, by role, never a real person."
+                },
+                "method": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "enum": ["screen", "cross", "api", "seed"] },
+                  "description": "screen: seen by the user who acted. cross: the effect seen on another user's screen (the note names who acted and who saw). api: HTTP status and body read directly. seed: seeded data read as is."
+                },
+                "verdict": {
+                  "enum": ["PASS", "PARTIAL", "FAIL", "UNVERIFIABLE"],
+                  "description": "PASS: seen, and the screenshot shows it. PARTIAL: only part holds, or it was proved in a reduced form (the note names the substitution). FAIL: the screen contradicts the expected result, or a request fails behind a cheerful screen. UNVERIFIABLE: the moment could not be reached (the note names the blocker)."
+                },
+                "cases": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "string" },
+                  "description": "Bench case ids this check covers. Every case assigned to the walker appears in some check."
+                },
+                "screenshots": {
+                  "type": "array",
+                  "description": "Required non-empty for every verdict except UNVERIFIABLE.",
+                  "items": {
+                    "type": "object",
+                    "required": ["file", "caption"],
+                    "properties": {
+                      "file": {
+                        "type": "string",
+                        "description": "Path relative to this JSON file: <journey>/<nn><letter>-<slug>-<desktop|phone>.png. A .png or .jpg inside this file's folder; the generator fails (exit 3) on anything else, and (exit 2) if it does not exist."
+                      },
+                      "caption": { "type": "string", "description": "Ten words or fewer: what the image shows, not what the walker hoped." },
+                      "device": { "enum": ["desktop", "phone"], "description": "Optional; inferred from a -phone suffix in the file name." }
+                    }
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "description": "Twenty-five words or fewer, only when it adds something: the substitution behind a PARTIAL, the blocker behind an UNVERIFIABLE, who acted and who saw in a cross check."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "title", "steps", "expected", "actual", "screenshot"],
+        "properties": {
+          "id": { "type": "string", "description": "<walker>-D<n>: w2-D1." },
+          "severity": { "enum": ["high", "medium", "low"] },
+          "title": { "type": "string" },
+          "steps": { "type": "string", "description": "Who, where, what they did: enough to reproduce." },
+          "expected": { "type": "string", "description": "What the spec promises (the spec, not the bench, when they disagree)." },
+          "actual": { "type": "string" },
+          "screenshot": { "type": "string", "description": "One image that shows it, relative to this file: a .png or .jpg inside this file's folder." }
+        }
+      }
+    },
+    "consumedState": {
+      "type": "string",
+      "description": "What the walk spent that does not come back: approvals, sales, closed records, invitations used."
+    },
+    "consoleNetwork": { "type": "string", "description": "Console errors and failed requests seen, and which of them were expected." },
+    "unverifiable": { "type": "string", "description": "Rows that could not be walked and why, or None." }
+  }
+}

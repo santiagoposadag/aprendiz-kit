@@ -4,7 +4,7 @@ description: "Trigger: delegate work, implement a story, run subagents, adversar
 license: MIT
 metadata:
   author: "Santiago Posada"
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## Activation Contract
@@ -96,6 +96,9 @@ verify, decide, and commit. You do not implement.
 | One mechanical check with a stated procedure | `verifier-light` |
 | End-to-end run of a story's criteria | `verifier-std` |
 | Probing authz, payment invariants, "calling the API directly" criteria | `verifier-deep` |
+| Walking a finished feature for what nobody wrote down | `verifier-e2e` |
+| Proving a done story's acceptance scenarios, with screenshots | `certifier-e2e`, then `certifier-auditor` — see `certification` |
+| Certifying the whole product before a release or a review | `certification` skill: walkers in parallel, one auditor each |
 | Breaking a settled design into ordered tasks | `planner-fast` |
 | Architecture, cross-cutting design, open business tradeoffs | `planner-deep` |
 
@@ -134,3 +137,4 @@ pushed, decisions filed in the open-decisions ledger, and anything left red with
 - `assets/delegation-brief.md` — the delegation brief template.
 - The kit's `agents/` — fleet definitions; frontmatter `model:` beats the session model.
 - The project's open-decisions ledger — where open business decisions live.
+- The `certification` skill — from acceptance scenarios to an audited certification with screenshots, per story or for the whole product.

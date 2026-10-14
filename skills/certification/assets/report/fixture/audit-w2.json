@@ -1,0 +1,11 @@
+{
+  "walker": "w2",
+  "checks": [
+    { "id": "J02.1", "support": "SUPPORTED", "completedBy": "orchestrator", "reason": "01b was on disk but uncited; it shows member C borrowing the freed ladder." },
+    { "id": "J02.2", "support": "SUPPORTED", "reason": "Status 403 and the error body are on the page, under member C's strip." }
+  ],
+  "defects": [
+    { "id": "w2-D1", "support": "SUPPORTED", "reason": "The badge visibly crosses the card edge." }
+  ],
+  "summary": "2 checks: 2 SUPPORTED (one completed by the orchestrator from an orphan). Defect supported."
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bench-case.schema.json",
+  "title": "Manual test bench",
+  "description": "The cases a person, or a certifier, walks. Derived from acceptance scenarios: one or more cases per scenario, never a case without one. Keep the bench as data (a JSON file, or a script block of type application/json inside a bench page) so a test can parse all of it; see bench-contract.test.mjs.",
+  "type": "object",
+  "required": ["groups", "cases"],
+  "properties": {
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string", "description": "Short id: seed, signup, moderation." },
+          "name": { "type": "string" }
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "group", "actor", "story", "title", "steps", "expected"],
+        "properties": {
+          "id": { "type": "string", "description": "Stable and unique: B-01, B-02. Never renumber; certification reports cite these." },
+          "group": { "type": "string", "description": "An id from groups. Put the read-only seed cases in the first group." },
+          "actor": { "type": "string", "description": "The role who performs the steps: member, steward, anonymous visitor." },
+          "story": {
+            "type": "string",
+            "description": "The story and scenario this case proves, e.g. F003-US2-4 (feature 003, story 2, scenario 4). Several, separated by ' · ', when one case covers more than one."
+          },
+          "title": { "type": "string" },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "What a person does, starting from where they land. A URL appears only when the case is about a link."
+          },
+          "expected": {
+            "type": "string",
+            "description": "What is visible on the screen or in the API response when the case holds: values, states, messages, counts, the exact numbers the seed produces."
+          },
+          "ref": { "type": "string", "description": "Optional: the requirement or decision behind it." },
+          "note": { "type": "string", "description": "Optional: what changes after other cases ran, what state this one consumes." }
+        }
+      }
+    }
+  }
+}

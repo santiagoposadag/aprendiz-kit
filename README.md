@@ -10,8 +10,8 @@ something, and the ones that sound strange are usually the ones that cost the mo
 ## What is in it
 
 **`agents/`** — the fleet. Implementation at three depths, planning at two, verification
-at four, and one structural reviewer. Plus the three judgment-day judges, adapted from
-gentle-ai.
+at four, certification in two roles that never merge, and one structural reviewer. Plus
+the three judgment-day judges, adapted from gentle-ai.
 
 The one worth reading first is `verifier-e2e`, which walks a finished feature in a real
 browser. It exists because a green suite proves the assertions somebody thought to
@@ -21,12 +21,21 @@ first.
 **`skills/subagent-orchestration/`** — how work is routed, verified and committed. Its
 Hard Rules are the compressed form of a lot of wasted afternoons.
 
+**`skills/certification/`** — from acceptance scenarios to a certification an owner can
+read with the screenshots side by side: the scenario format, the manual test bench and the
+seed behind it, per-story and whole-product rounds, a certifier and a separate auditor, and
+a report generator that ships with the check that clicks every thumbnail. Certification
+proves only what is written; `verifier-e2e` still goes first.
+
 **`skills/judgment-day/`** — dual blind adversarial review. Copied from gentle-ai,
 frozen, unmodified. See `docs/ATTRIBUTION.md`.
 
+**`skills/doctor/`** — a deterministic check of everything the kit depends on, with the
+command that fixes each gap. See "What it assumes".
+
 **`docs/`** — why each piece exists.
 
-## Read these three
+## Read these
 
 - **[`docs/what-checks-what.md`](docs/what-checks-what.md)** — the dividing question
   between a deterministic check and a judgment agent, and why putting a question in the
@@ -34,6 +43,10 @@ frozen, unmodified. See `docs/ATTRIBUTION.md`.
 - **[`docs/judgment-day-in-practice.md`](docs/judgment-day-in-practice.md)** — what
   running dual review taught, including the one place practice contradicts the packaged
   skill. That contradiction cost two real findings the night it was discovered.
+- **[`docs/certification-in-practice.md`](docs/certification-in-practice.md)** — a
+  whole-product certification in numbers: 88 checks, four walkers in parallel, four
+  auditors who found 12 gaps the walkers had reported as done, and a report viewer that
+  opened the wrong image on every click.
 - **[`docs/ATTRIBUTION.md`](docs/ATTRIBUTION.md)** — what was copied, from where, at
   which checksum, what was changed, and how to refresh it.
 
@@ -55,11 +68,35 @@ claude plugin validate /path/to/aprendiz-kit
 
 ## What it assumes
 
-**Engram**, for memory across sessions. Declared, not bundled — several agents list its
-tools. Without it they still work and only lose recall.
+**Run the doctor first.** `/aprendiz-kit:doctor`, or `node skills/doctor/doctor.mjs` from a
+checkout, checks everything below without asking a model anything and prints, per line,
+whether it is critical, recommended or optional and the command that fixes it. It exits 1
+only when a critical check fails.
 
-**Playwright MCP**, for the browser. `verifier-e2e` and `verifier-std` drive it; without
-it they cannot walk a screen and should say so rather than guess.
+**Playwright MCP**, for the browser — bundled. The plugin starts `@playwright/mcp` at a
+pinned version through `npx`, in an isolated profile, and drives the installed Google
+Chrome. `verifier-e2e`, `verifier-std` and a lone `certifier-e2e` use it; without Node.js 18+
+or Chrome they cannot walk a screen and should say so rather than guess. If you already run
+your own `playwright` server, the agents accept it too. The server saves its snapshots and
+screenshots under `.playwright-mcp/` in the directory the session runs in, so add that
+folder to the project's `.gitignore`; the doctor tells you when it is not. Certifiers running in parallel drive
+Playwright from their own scripts instead — a shared browser signs one walker out when
+another signs in — so a project that certifies whole rounds needs `playwright` or
+`@playwright/test` installed. The certification report's check uses it too, and its WebP
+copies use `sharp`. Neither is bundled.
+
+**Engram**, for memory across sessions. Declared, not bundled — several agents list its
+tools. Without it they still work and only lose recall. Its complete setup is four steps,
+and the third is the one usually missed:
+
+```sh
+go install github.com/Gentleman-Programming/engram/cmd/engram@latest   # or: brew install gentleman-programming/tap/engram
+claude plugin marketplace add Gentleman-Programming/engram && claude plugin install engram
+engram setup claude-code      # registers the MCP server; the plugin alone does not
+# plus jq and curl on PATH, which the engram plugin's hooks call
+```
+
+Restart Claude Code, then run the doctor.
 
 **Git hooks are the project's, not the kit's.** A plugin cannot install a git hook and
 cannot be invoked from a destination project's `package.json`. So the kit does not

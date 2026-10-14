@@ -1,0 +1,52 @@
+{
+  "walker": "w2",
+  "commit": "0000000",
+  "date": "2026-01-15",
+  "journeys": [
+    {
+      "id": "J02",
+      "title": "Return and history",
+      "checks": [
+        {
+          "id": "J02.1",
+          "title": "Returning a tool frees it for the next member",
+          "users": ["member B", "member C"],
+          "method": ["cross"],
+          "verdict": "PASS",
+          "cases": ["B-05", "B-06"],
+          "screenshots": [
+            { "file": "J02/01a-member-returns-tool-desktop.png", "caption": "Member B returns the ladder" },
+            { "file": "J02/01b-second-member-borrows-desktop.png", "caption": "Member C: ladder available, borrowed" }
+          ],
+          "note": ""
+        },
+        {
+          "id": "J02.2",
+          "title": "The loan history API refuses another member",
+          "users": ["member B", "member C"],
+          "method": ["api"],
+          "verdict": "PASS",
+          "cases": ["B-07"],
+          "screenshots": [
+            { "file": "J02/02a-history-api-403-desktop.png", "caption": "Member C reads B's history: 403" }
+          ],
+          "note": "Probe sent from member C's page, with that page's own session."
+        }
+      ]
+    }
+  ],
+  "defects": [
+    {
+      "id": "w2-D1",
+      "severity": "medium",
+      "title": "The overdue badge overflows its card at phone width",
+      "steps": "Member B, phone viewport, My loans, a loan past its due date.",
+      "expected": "The badge stays inside the card.",
+      "actual": "The badge runs past the card's right edge and covers the scroll bar.",
+      "screenshot": "J02/03a-overdue-badge-phone.png"
+    }
+  ],
+  "consumedState": "The ladder's loan to member B closed; a new loan to member C open.",
+  "consoleNetwork": "403 on the cross-member probe, as expected. No 5xx.",
+  "unverifiable": "None."
+}
