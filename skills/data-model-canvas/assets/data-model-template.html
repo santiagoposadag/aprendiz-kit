@@ -1,0 +1,471 @@
+<title>Data Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: one tab per domain; entity diagram on the left, interface pieces and events on the right; a metrics tab ties events to the numbers they produce. */
+:root{
+  --bg:#eef1f5; --panel:#ffffff; --ink:#16212e; --muted:#5f6f82; --line:#c9d2dd; --soft:#f4f6f9;
+  --ent:#1d4ed8; --ent-soft:#dbe5fb;
+  --hit:#b45309; --hit-soft:#fdebd0;
+  --calc:#6d28d9; --calc-soft:#ece4fd;
+  --new:#0b5c55; --new-soft:#d9f0ec;
+  --sans:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --panel:#17202b; --ink:#e6edf5; --muted:#94a3b5; --line:#334255; --soft:#1d2733;
+  --ent:#8fb0ff; --ent-soft:#1c2b4d; --hit:#f3b86b; --hit-soft:#3a2a14; --calc:#c4a8ff; --calc-soft:#2d2347;
+  --new:#6fd3c4; --new-soft:#123a36; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --panel:#17202b; --ink:#e6edf5; --muted:#94a3b5; --line:#334255; --soft:#1d2733;
+  --ent:#8fb0ff; --ent-soft:#1c2b4d; --hit:#f3b86b; --hit-soft:#3a2a14; --calc:#c4a8ff; --calc-soft:#2d2347;
+  --new:#6fd3c4; --new-soft:#123a36; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px;max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-size:26px;font-weight:800;text-wrap:balance}
+.lead{margin:4px 0 0;color:var(--muted);max-width:75ch;line-height:1.5}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:2px solid var(--hit);outline-offset:2px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13.5px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);align-items:center}
+.legend span{display:flex;gap:6px;align-items:center}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:1500px){.main{grid-template-columns:minmax(0,1fr)}}
+.scrollhint{display:none;color:var(--muted);font-size:12px;margin-bottom:6px}
+@media (max-width:900px){.scrollhint{display:block}}
+.diagram-scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.diagram{position:relative;min-width:1340px;padding:24px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:110px;row-gap:44px}
+svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+svg.links .ln{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.links .card{fill:var(--muted);font-family:var(--mono);font-size:11px;font-weight:600}
+svg.links .rel{fill:var(--muted);font-family:var(--sans);font-size:11px;font-weight:600}
+.ent{position:relative;z-index:1;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;align-self:start}
+.ent.ref{border-style:dashed}
+.ent.ref header{background:var(--soft)}
+.ent.ref header b{color:var(--muted)}
+.ent.on{border-color:var(--ent)}
+.ent.go{cursor:pointer}
+.ent.go:hover{border-color:var(--ink)}
+.ent header{background:var(--ent-soft);padding:8px 10px;display:flex;flex-direction:column;gap:1px}
+.ent header b{font-family:var(--mono);font-size:12.5px;color:var(--ent)}
+.ent header span{font-size:11.5px;color:var(--muted)}
+.body{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.15fr)}
+.fld{grid-column:1/-1;display:grid;grid-template-columns:subgrid;column-gap:10px;padding:4px 10px;border-top:1px solid var(--soft);font-family:var(--mono);font-size:11.5px;align-items:baseline}
+.fld i{font-style:normal;color:var(--muted);font-size:10.5px;overflow-wrap:anywhere}
+.fld em{font-style:normal;color:var(--new);text-align:right;overflow-wrap:anywhere;font-weight:500}
+.fld em.null{color:var(--muted);font-style:italic}
+.fld.hd{background:var(--soft);padding-block:3px}
+.fld.hd b,.fld.hd i,.fld.hd em{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+.fld.hd em{color:var(--new)}
+.fld b{font-weight:500}
+.fld.k b{text-decoration:underline;text-underline-offset:3px}
+.fld.c b{color:var(--calc)}
+.fld.hit{background:var(--hit-soft);box-shadow:inset 3px 0 0 var(--hit)}
+.fld.hit b{color:var(--hit);font-weight:600}
+.dim .ent:not(.on){opacity:.4}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.seg{display:flex;gap:3px;background:var(--line);border-radius:10px;padding:3px}
+.seg button{flex:1;min-height:36px;border:0;border-radius:8px;background:transparent;font-weight:600;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:6px}
+.item{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;flex-direction:column;gap:3px;cursor:pointer}
+.item:hover{border-color:var(--ink)}
+.item[aria-pressed="true"]{border-color:var(--hit);box-shadow:inset 3px 0 0 var(--hit)}
+.item b{font-size:13.5px}
+.item .ev{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.item small{font-size:11.5px;color:var(--muted)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.b-v1{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.b-mkt{background:var(--calc-soft);color:var(--calc)}
+.b-new{background:var(--new-soft);color:var(--new)}
+.b-ren{background:var(--hit-soft);color:var(--hit)}
+.b-dor{background:var(--soft);color:var(--muted);border:1px dashed var(--line)}
+.how{background:var(--panel);border:1px solid var(--hit);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.how code{font-family:var(--mono);font-size:11.5px;background:var(--hit-soft);padding:7px 9px;border-radius:6px;overflow-wrap:anywhere;line-height:1.55;display:block}
+.how p{margin:0;font-size:12.5px;line-height:1.5}
+.how .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--soft);cursor:pointer}
+.chip:hover{border-color:var(--ink)}
+.notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.notes{grid-template-columns:minmax(0,1fr)}}
+.notes div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;line-height:1.45}
+.notes b{font-size:13px}
+.notes span{color:var(--muted);font-size:12.5px}
+.mgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:start}
+@media (max-width:980px){.mgrid{grid-template-columns:minmax(0,1fr)}}
+.group h3{margin:6px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.evcat{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.evcat h3{margin:0;padding:8px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--soft);border-top:1px solid var(--line)}
+.evcat h3:first-child{border-top:0}
+.evrow{display:grid;grid-template-columns:minmax(150px,auto) auto minmax(0,1fr);gap:10px;align-items:center;padding:6px 12px;border-top:1px solid var(--soft);font-size:12px}
+.evrow .n{font-family:var(--mono);font-weight:600}
+.evrow .p{font-family:var(--mono);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+.evrow.hit{background:var(--hit-soft);box-shadow:inset 3px 0 0 var(--hit)}
+.mdim .evrow:not(.hit){opacity:.45}
+@media (max-width:640px){.evrow{grid-template-columns:minmax(0,1fr) auto}.evrow .p{grid-column:1/-1}}
+.envelope{font-family:var(--mono);font-size:11.5px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;line-height:1.6;overflow-wrap:anywhere}
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>Data model: Riverside Public Library (worked example)</h1>
+    <p class="lead">The core structures of each domain, how they relate, which interface pieces are built from them and which events they emit for the metrics. Select a piece or an event and the fields it uses are highlighted.</p>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Domains" id="tabs"></div>
+  <div class="legend" id="legend">
+    <span><b style="font-family:var(--mono);text-decoration:underline">id</b> key</span>
+    <span><b style="font-family:var(--mono);color:var(--calc)">available</b> computed</span>
+    <span><b style="font-family:var(--mono)">1 — N</b> one to many</span>
+    <span><span style="width:22px;height:14px;border:1.5px dashed var(--line);border-radius:4px;display:inline-block"></span> owned by another domain</span>
+    <span id="legend-note"></span>
+    <span><b style="font-family:var(--mono);color:var(--new)">ten_riverside</b> sample tenant: Riverside Public Library · readable ids, real ids are uuids</span>
+  </div>
+  <div id="view"></div>
+</div>
+
+<script>
+(function () {
+  /* =====================================================================
+     DATA SCHEMA (everything above the "ENGINE" marker is project content;
+     a new project replaces only these arrays and strings)
+
+     SAMPLE_TENANT   string shown in the legend and as the 3rd column header of
+                     entity boxes (the example-value column).
+     LEGEND_NOTE     string: one extra legend line for a project-wide rule (shown
+                     on domain tabs). Use '' to hide it.
+     ENVELOPE        string: the fields every event carries (shown on the map
+                     tab and under the events catalog).
+     DORMANT_LABEL   string: group title for events defined but not emitted yet.
+
+     METRICS = [ { group: 'Group title', items: [
+                   { name: 'Metric name',
+                     ev: ['event.name', ...],   // every name must exist in some
+                                                // domain's events (or DORMANT)
+                     f: 'formula over those events' } ] } ]
+       Event -> metric chips are DERIVED by inverting this list. Never
+       write them anywhere else.
+
+     BADGE = { key: [cssClass, label] }  provenance badges for events.
+       An event may also carry  was: 'old.name'  when b is 'ren'.
+
+     D = [ domain, ... ]  one tab per domain, in order. Three kinds:
+       { id, name, map: true, ents, links }       the overview (only one)
+       { id, name, metrics: true }                the metrics catalog (only one)
+       { id, name, ents, links, cons, events, notes }   a regular domain
+
+     ents (diagram boxes, placed on a 3-column grid; col 1..3, row 1..n):
+       { id: 'table_name',        box title; unique inside the domain
+         col: 1, row: 1,          grid placement (see "link rule" below)
+         desc: 'one-line role',
+         ref: 'Owner domain',     OPTIONAL: truthy => owned by another domain,
+                                  drawn with a dashed border
+         go: 'domain-id',         OPTIONAL, map only: clicking opens that tab
+         hd: [a, b, c],           OPTIONAL: custom header for the 3 columns
+                                  (map boxes use it; default is field/type/example)
+         f: [ [name, type, example, flag?], ... ] }
+           flag 'k' = key field (underlined), 'c' = computed (own color).
+           example 'null' renders muted/italic.
+       On the map, f rows are [table, what it stores, row count per month].
+
+     links: [ [fromEntId, toEntId, 'verb', card1?, card2?], ... ]
+       Defaults to 1 at the "from" end and N at the "to" end. Pass custom
+       cardinalities as strings, e.g. ['loans','fines','may incur','1','0..1'].
+       On the map tab links carry only the verb (no cardinalities).
+       LINK RULE: only link boxes that are grid-adjacent. Same row -> horizontal
+       line; same column -> vertical line; adjacent column -> elbow through the
+       column gap. Plan col/row so every link is adjacent, or lines cross boxes.
+
+     cons (interface pieces):
+       { name, where: 'screen or surface',
+         fields: ['ent.field', ...],   // highlighted in the diagram when selected;
+                                       // must match ent id + field name exactly
+         code: 'rule / formula (\n allowed)',
+         text: 'plain-language line' }
+
+     events:
+       { n: 'noun.verb',
+         b: 'existing' | 'ext' | 'new' | 'ren' | 'dor'  (a BADGE key),
+         was: 'old.name',               // only with b: 'ren'
+         from: ['ent.field', ...],      // fields whose change emits it (outbox,
+                                        // same transaction); highlighted
+         p: 'payload fields',
+         when: 'plain-language trigger' }
+
+     notes: [ ['Title', 'Modeling decision in plain language'], x3 ]
+
+     DORMANT = [ { n, b: 'dor', p } ]   events defined but not emitted yet
+     ===================================================================== */
+
+  /* ===== WORKED EXAMPLE — replace these arrays for your project =====
+     Fictional sample tenant "Riverside Public Library" (ten_riverside). One story
+     chains across tabs: usr_maya joins as mem_maya; book bok_dune has copy
+     cpy_dune_01 at brn_central; she borrows it in loan_0042, returns it late and
+     gets fine fin_0007. */
+  var SAMPLE_TENANT = 'Riverside';
+  var LEGEND_NOTE = 'In a multi-tenant system, every table with tenant_id carries RLS';
+  var ENVELOPE = 'event_id · event_type · schema_version · tenant_id · occurred_at + the event\'s own fields';
+  var DORMANT_LABEL = 'Dormant';
+
+  var METRICS = [
+    { group: 'Lending', items: [
+      { name: 'Loans per month', ev: ['loan.created'], f: 'COUNT(loan.created) per month' },
+      { name: 'On-time return rate', ev: ['loan.created', 'loan.returned'], f: 'loan.returned with returned_at <= due_at ÷ COUNT(loan.created)' },
+      { name: 'Overdue loans', ev: ['loan.created', 'loan.returned'], f: 'loan.created with no loan.returned and now > due_at' } ] },
+    { group: 'Collection', items: [
+      { name: 'Books added', ev: ['book.added'], f: 'COUNT(book.added) per month' },
+      { name: 'Unavailable titles', ev: ['copy.status_changed'], f: 'books whose available reaches 0, and how long they stay there' } ] },
+    { group: 'Money', items: [
+      { name: 'Fines issued', ev: ['fine.issued'], f: 'SUM(amount) of fine.issued per month' } ] },
+    { group: 'Dormant', items: [
+      { name: 'Reminder effectiveness', ev: ['reminder.sent', 'loan.returned'], f: 'loan.returned within 3 days of reminder.sent ÷ COUNT(reminder.sent)' } ] }
+  ];
+  var BADGE = { existing: ['b-v1', 'existing'], ext: ['b-mkt', 'extended'], new: ['b-new', 'new'], ren: ['b-ren', 'renames'], dor: ['b-dor', 'dormant'] };
+
+  var D = [];
+  D.push({ id: 'map', name: 'General map', map: true,
+    ents: [
+      { id: 'Tenant and access', col: 1, row: 1, desc: 'Who the library is and who can act', hd: ['table', 'what it stores', 'rows for Riverside'], f: [['tenants', 'the library', '1'], ['users', 'people', '1.200'], ['memberships', 'person in a library', '1.200'], ['role_bindings', 'role + scope grants', '14']] },
+      { id: 'Catalog', go: 'catalog', col: 2, row: 1, desc: 'What can be borrowed and where it is', hd: ['table', 'what it stores', 'rows for Riverside'], f: [['books', 'titles', '8.400'], ['copies', 'physical copies', '11.000'], ['branches', 'locations', '3'], ['holdings', 'count per (book, branch)', '10.200']] },
+      { id: 'Loans', go: 'loans', col: 2, row: 2, desc: 'Who borrowed what, and what it cost', hd: ['table', 'what it stores', 'rows per month'], f: [['members', 'borrowers', '1.200'], ['loans', 'loans', '2.150'], ['fines', 'fines', '160']] },
+      { id: 'Events', go: 'metrics', col: 2, row: 3, desc: 'Every change leaves an event', hd: ['piece', 'what for', 'volume per month'], f: [['outbox', 'Postgres', '≈ 5.000 events'], ['Pub/Sub', 'fan-out', 'same'], ['BigQuery', 'metrics', '≈ 5.000 rows']] }
+    ],
+    links: [
+      ['Tenant and access', 'Catalog', 'tenant_id'],
+      ['Tenant and access', 'Loans', 'access'],
+      ['Catalog', 'Loans', 'loans → copies'],
+      ['Loans', 'Events', 'all emit']
+    ] });
+
+  D.push({ id: 'catalog', name: 'Catalog',
+    ents: [
+      { id: 'books', col: 1, row: 1, desc: 'A title', f: [['id', 'uuid', 'bok_dune', 'k'], ['tenant_id', '→ tenants', 'ten_riverside'], ['title', 'text', 'Dune'], ['isbn', 'text', '978-0441172719'], ['loan_days', 'int · null = branch default', 'null → 21']] },
+      { id: 'copies', col: 2, row: 1, desc: 'A physical copy of a book', f: [['id', 'uuid', 'cpy_dune_01', 'k'], ['book_id', '→ books', 'bok_dune'], ['branch_id', '→ branches', 'brn_central'], ['barcode', 'text', 'RPL-004711'], ['status', 'in_stock · lost · withdrawn', 'in_stock']] },
+      { id: 'branches', col: 3, row: 2, desc: 'Library locations', f: [['id', 'uuid', 'brn_central', 'k'], ['name', 'text', 'Central'], ['loan_days', 'int', '21']] },
+      { id: 'holdings', col: 2, row: 2, desc: 'Counts per book and branch', f: [['book_id', '→ books', 'bok_dune', 'k'], ['branch_id', '→ branches', 'brn_central', 'k'], ['total', 'int', '3'], ['on_loan', 'int', '2'], ['available', 'total − on_loan', '1', 'c']] }
+    ],
+    links: [['books', 'copies', 'exists as'], ['copies', 'branches', 'shelves', 'N', '1'], ['copies', 'holdings', 'is counted in']],
+    cons: [
+      { name: 'Loan period shown', where: 'Catalog · book page', fields: ['books.loan_days', 'branches.loan_days'], code: 'days = books.loan_days ?? branches.loan_days', text: 'If the book has no period of its own, it takes the branch default.' },
+      { name: 'Availability badge', where: 'Catalog · book page', fields: ['holdings.available', 'holdings.branch_id', 'branches.name'], code: 'one line per branch\nbadge = available > 0 ? "on shelf" : "all out"', text: 'Staff see 1 on shelf at Central and all out at the other branches.' },
+      { name: 'Copy list', where: 'Admin · book', fields: ['copies.barcode', 'copies.status', 'copies.branch_id', 'branches.name'], code: 'rows = copies of the book\nstatus is only the physical state', text: 'Whether a copy is out on loan is read from loans, never stored here.' }
+    ],
+    events: [
+      { n: 'book.added', b: 'new', from: ['books.id'], p: 'book_id, isbn', when: 'A title is added to the catalog.' },
+      { n: 'copy.status_changed', b: 'ext', from: ['copies.status', 'holdings.total', 'holdings.available'], p: 'copy_id, from, to, branch_id', when: 'A copy is lost, withdrawn or put back in stock.' }
+    ],
+    notes: [
+      ['Composition, not inheritance', 'A book has copies. The copy stores only what distinguishes it; anything missing, like the loan period, is read from the book or the branch.'],
+      ['Counts per place get their own table', 'holdings has one row per (book, branch). The same title can have 1 available at Central and 0 elsewhere.'],
+      ['Derived, not stored', 'available is total − on_loan. It is computed, so nobody can leave it out of sync.']
+    ] });
+
+  D.push({ id: 'loans', name: 'Loans',
+    ents: [
+      { id: 'members', col: 1, row: 1, desc: 'Who borrows', f: [['id', 'uuid', 'mem_maya', 'k'], ['member_ref', 'per-tenant pseudonym', 'mr_5d1f…e9a'], ['name', 'text', 'Maya Torres'], ['email', 'encrypted', 'enc:AQIDAH…']] },
+      { id: 'loans', col: 2, row: 1, desc: 'One book out for a period', f: [['id', 'uuid', 'loan_0042', 'k'], ['member_id', '→ members', 'mem_maya'], ['copy_id', '→ copies', 'cpy_dune_01'], ['loaned_at', 'timestamp', '3 Mar'], ['due_at', 'timestamp', '24 Mar'], ['returned_at', 'null while out', '29 Mar'], ['overdue', 'returned_at ?? now > due_at', 'true · 5 days', 'c']] },
+      { id: 'fines', col: 3, row: 1, desc: 'Charged for late returns', f: [['id', 'uuid', 'fin_0007', 'k'], ['loan_id', '→ loans', 'loan_0042'], ['amount', 'int (cents)', '250'], ['paid_at', 'null until paid', 'null']] },
+      { id: 'copies', ref: 'Catalog', col: 1, row: 2, desc: 'from Catalog', f: [['id', 'uuid', 'cpy_dune_01', 'k'], ['barcode', 'text', 'RPL-004711']] }
+    ],
+    links: [['members', 'loans', 'borrows'], ['loans', 'fines', 'may incur', '1', '0..1'], ['copies', 'loans', 'is lent in']],
+    cons: [
+      { name: 'Loan status', where: 'Admin · loans', fields: ['loans.loaned_at', 'loans.due_at', 'loans.returned_at', 'loans.overdue'], code: 'state = returned_at ? returned : now > due_at ? overdue : on loan', text: 'The state is not a column. It is deduced, and nobody moves it by hand.' },
+      { name: 'Days overdue', where: 'Admin · loans', fields: ['loans.due_at', 'loans.returned_at'], code: 'days = (returned_at ?? now) − due_at', text: 'Computed in the view from stored timestamps; it changes every day, so it is never stored.' },
+      { name: 'Member card', where: 'Admin · member', fields: ['members.name', 'loans.copy_id', 'copies.barcode', 'fines.amount', 'fines.paid_at'], code: 'open loans + unpaid fines (paid_at is null)', text: 'The barcode is read from the owner domain; nothing is copied.' }
+    ],
+    events: [
+      { n: 'loan.created', b: 'existing', from: ['loans.id', 'loans.copy_id'], p: 'loan_id, copy_id, member_ref, due_at', when: 'A copy is lent to a member.' },
+      { n: 'loan.returned', b: 'ren', was: 'loan.closed', from: ['loans.returned_at'], p: 'loan_id, copy_id, days_late', when: 'The copy comes back.' },
+      { n: 'fine.issued', b: 'new', from: ['fines.id', 'fines.amount'], p: 'fine_id, loan_id, amount', when: 'A late return generates a fine.' }
+    ],
+    notes: [
+      ['State and history stay apart', 'copies.status is the physical state now. loans is the history of who had it. Screens read state; metrics read history.'],
+      ['Overdue is derived', 'Nothing stores "overdue". It follows from due_at and returned_at, so there is no status to drag or forget to update.'],
+      ['No personal data in events', 'Events carry member_ref, a pseudonym per tenant. Name and email never leave this domain.']
+    ] });
+
+  D.push({ id: 'metrics', name: 'Events and metrics', metrics: true });
+
+  var DORMANT = [
+    { n: 'reminder.sent', b: 'dor', p: 'loan_id, member_ref' }
+  ];
+  /* ============================ ENGINE ============================ */
+  /* Everything below renders the data above. Do not edit it per project. */
+
+  function metricsFor(ev) {
+    var out = [];
+    METRICS.forEach(function (g) { g.items.forEach(function (m) { if (m.ev.indexOf(ev) !== -1) out.push(m.name); }); });
+    return out;
+  }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function badge(b, was) { var x = BADGE[b]; return '<span class="badge ' + x[0] + '">' + x[1] + (was ? ' ' + esc(was) : '') + '</span>'; }
+
+  var state = { tab: D[0].id, mode: 'cons', idx: 0, metric: null };
+
+  function renderTabs() {
+    document.getElementById('tabs').innerHTML = D.map(function (d) {
+      return '<button type="button" role="tab" data-tab="' + d.id + '" aria-selected="' + (d.id === state.tab) + '">' + d.name + '</button>';
+    }).join('');
+  }
+
+  function diagramHTML(d) {
+    return '<div class="scrollhint">Scroll sideways to see the full diagram →</div><div class="diagram-scroll"><div class="diagram" id="diagram"><svg class="links" id="links" aria-hidden="true"></svg>' +
+      d.ents.map(function (e) {
+        return '<section class="ent' + (e.ref ? ' ref' : '') + (e.go ? ' go' : '') + '" id="e-' + slug(e.id) + '" style="grid-column:' + e.col + ';grid-row:' + e.row + '"' + (e.go ? ' data-go="' + e.go + '" tabindex="0" role="button"' : '') + '>' +
+          '<header><b>' + e.id + '</b><span>' + e.desc + '</span></header>' +
+          '<div class="body"><div class="fld hd"><b>' + (e.hd ? e.hd[0] : 'field') + '</b><i>' + (e.hd ? e.hd[1] : 'type') + '</i><em>' + (e.hd ? e.hd[2] : SAMPLE_TENANT) + '</em></div>' +
+          e.f.map(function (f) { return '<div class="fld' + (f[3] ? ' ' + f[3] : '') + '" data-k="' + e.id + '.' + f[0] + '"><b>' + f[0] + '</b><i>' + esc(f[1] || '') + '</i><em class="' + (f[2] === 'null' ? 'null' : '') + '">' + esc(f[2] || '') + '</em></div>'; }).join('') +
+        '</div></section>';
+      }).join('') + '</div></div>';
+  }
+  function slug(s) { return s.replace(/[^a-zA-Z0-9_]/g, '-'); }
+
+  function draw(d) {
+    var dia = document.getElementById('diagram'); if (!dia) return;
+    var base = dia.getBoundingClientRect(), out = '';
+    d.links.forEach(function (L) {
+      var A = document.getElementById('e-' + slug(L[0])).getBoundingClientRect();
+      var B = document.getElementById('e-' + slug(L[1])).getBoundingClientRect();
+      var ra = { l: A.left - base.left, r: A.right - base.left, t: A.top - base.top, b: A.bottom - base.top };
+      var rb = { l: B.left - base.left, r: B.right - base.left, t: B.top - base.top, b: B.bottom - base.top };
+      var c1 = d.map ? '' : (L[3] || '1'), c2 = d.map ? '' : (L[4] || 'N');
+      if (Math.abs(ra.t - rb.t) < 30) {
+        var y = ra.t + 24, dx = rb.l > ra.l ? 1 : -1;
+        var ax = dx > 0 ? ra.r : ra.l, bx = dx > 0 ? rb.l : rb.r;
+        out += '<path class="ln" d="M' + ax + ' ' + y + ' H' + bx + '"/>';
+        out += txt('card', ax + dx * 6, y - 6, c1, dx > 0 ? 'start' : 'end');
+        out += txt('card', bx - dx * 6, y - 6, c2, dx > 0 ? 'end' : 'start');
+        out += txt('rel', (ax + bx) / 2, y + 15, L[2], 'middle');
+      } else if (Math.abs(ra.l - rb.l) < 30) {
+        var x = ra.l + 36, dy = rb.t > ra.t ? 1 : -1;
+        var ay = dy > 0 ? ra.b : ra.t, by = dy > 0 ? rb.t : rb.b;
+        out += '<path class="ln" d="M' + x + ' ' + ay + ' V' + by + '"/>';
+        out += txt('card', x + 6, dy > 0 ? ay + 14 : ay - 6, c1, 'start');
+        out += txt('card', x + 6, dy > 0 ? by - 6 : by + 14, c2, 'start');
+        out += txt('rel', x + 10, (ay + by) / 2 + 4, L[2], 'start');
+      } else {
+        var dir = rb.l > ra.l ? 1 : -1;
+        var sx = dir > 0 ? ra.r : ra.l, sy = ra.t + 44, ex = dir > 0 ? rb.l : rb.r, ey = rb.t + 44;
+        var gx = dir > 0 ? ra.r + 55 : ra.l - 55;
+        out += '<path class="ln" d="M' + sx + ' ' + sy + ' H' + gx + ' V' + ey + ' H' + ex + '"/>';
+        out += txt('card', sx + dir * 6, sy - 6, c1, dir > 0 ? 'start' : 'end');
+        out += txt('card', ex - dir * 6, ey - 6, c2, dir > 0 ? 'end' : 'start');
+        var my = (sy + ey) / 2;
+        out += '<text class="rel" text-anchor="middle" transform="translate(' + (gx - 6) + ' ' + my + ') rotate(-90)">' + esc(L[2]) + '</text>';
+      }
+    });
+    document.getElementById('links').innerHTML = out;
+  }
+  function txt(cls, x, y, s, anchor) { return s ? '<text class="' + cls + '" x="' + x + '" y="' + y + '" text-anchor="' + anchor + '">' + esc(s) + '</text>' : ''; }
+
+  function highlight(fields) {
+    var dia = document.getElementById('diagram'); if (!dia) return;
+    var used = {};
+    (fields || []).forEach(function (k) { used[k.split('.')[0]] = true; });
+    dia.classList.toggle('dim', !!fields);
+    dia.querySelectorAll('.ent').forEach(function (el) { el.classList.toggle('on', !!used[el.querySelector('header b').textContent]); });
+    dia.querySelectorAll('.fld').forEach(function (el) { el.classList.toggle('hit', !!fields && fields.indexOf(el.getAttribute('data-k')) !== -1); });
+  }
+
+  function renderDomain(d) {
+    var html = '<div class="main">' + diagramHTML(d) + '<aside class="side" id="side"></aside></div>';
+    if (d.notes) html += '<div class="notes">' + d.notes.map(function (n) { return '<div><b>' + n[0] + '</b><span>' + n[1] + '</span></div>'; }).join('') + '</div>';
+    document.getElementById('view').innerHTML = html;
+    renderSide(d);
+    requestAnimationFrame(function () { draw(d); });
+  }
+
+  function renderSide(d) {
+    var side = document.getElementById('side');
+    if (d.map) {
+      side.innerHTML = '<div class="how"><span class="lbl">HOW TO READ IT</span><p>Each box is a domain with its entities. Click one to open its model.</p><p>Domains talk through keys and events, never by writing the tables of another domain.</p></div>' +
+        '<div class="envelope"><span class="lbl" style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">EVERY EVENT CARRIES</span><br>' + esc(ENVELOPE) + '</div>';
+      highlight(null);
+      return;
+    }
+    var list = state.mode === 'cons' ? d.cons : d.events;
+    if (state.idx >= list.length) state.idx = 0;
+    var cur = list[state.idx];
+    var html = '<div class="seg" role="group" aria-label="View"><button type="button" data-mode="cons" aria-pressed="' + (state.mode === 'cons') + '">Interface · ' + d.cons.length + '</button><button type="button" data-mode="events" aria-pressed="' + (state.mode === 'events') + '">Events · ' + d.events.length + '</button></div>';
+    html += '<div class="list">' + list.map(function (x, i) {
+      if (state.mode === 'cons') return '<button type="button" class="item" data-idx="' + i + '" aria-pressed="' + (i === state.idx) + '"><b>' + x.name + '</b><small>' + x.where + '</small></button>';
+      return '<button type="button" class="item" data-idx="' + i + '" aria-pressed="' + (i === state.idx) + '"><span class="row"><span class="ev">' + x.n + '</span>' + badge(x.b, x.was) + '</span><small>' + x.when + '</small></button>';
+    }).join('') + '</div>';
+    if (state.mode === 'cons') {
+      html += '<div class="how"><b style="font-size:13px">' + cur.name + '</b><code>' + esc(cur.code).replace(/\n/g, '<br>') + '</code><p>' + cur.text + '</p></div>';
+      side.innerHTML = html; highlight(cur.fields);
+    } else {
+      var ms = metricsFor(cur.n);
+      html += '<div class="how"><span class="row"><b style="font-family:var(--mono);font-size:13px">' + cur.n + '</b>' + badge(cur.b, cur.was) + '</span>' +
+        '<span class="lbl">EMITTED WHEN</span><p>' + cur.when + ' In the same transaction as the highlighted change (outbox).</p>' +
+        '<span class="lbl">PAYLOAD</span><code>' + esc(cur.p) + '</code>' +
+        '<span class="lbl">FEEDS</span>' + (ms.length ? '<div class="chips">' + ms.map(function (m) { return '<button type="button" class="chip" data-metric="' + esc(m) + '">' + m + '</button>'; }).join('') + '</div>' : '<p>Audit only. Feeds no metric.</p>') + '</div>';
+      side.innerHTML = html; highlight(cur.from);
+    }
+  }
+
+  function allEvents() {
+    var out = [];
+    D.forEach(function (d) { (d.events || []).forEach(function (e) { out.push({ dom: d.name, e: e }); }); });
+    DORMANT.forEach(function (e) { out.push({ dom: DORMANT_LABEL, e: e }); });
+    return out;
+  }
+
+  function renderMetrics() {
+    var flat = []; METRICS.forEach(function (g) { g.items.forEach(function (m) { flat.push(m); }); });
+    var sel = flat.filter(function (m) { return m.name === state.metric; })[0] || flat[0];
+    state.metric = sel.name;
+    var left = '<div class="side">' + METRICS.map(function (g) {
+      return '<div class="group"><h3>' + g.group + '</h3><div class="list">' + g.items.map(function (m) {
+        return '<button type="button" class="item" data-m="' + esc(m.name) + '" aria-pressed="' + (m.name === sel.name) + '"><b>' + m.name + '</b></button>';
+      }).join('') + '</div></div>';
+    }).join('') + '</div>';
+    var evs = allEvents(), groups = [];
+    evs.forEach(function (x) { if (groups.indexOf(x.dom) === -1) groups.push(x.dom); });
+    var right = '<div style="display:flex;flex-direction:column;gap:12px;min-width:0">' +
+      '<div class="how"><b style="font-size:14px">' + sel.name + '</b><span class="lbl">HOW IT IS COMPUTED</span><code>' + esc(sel.f) + '</code><span class="lbl">EVENTS IT USES</span><p style="font-family:var(--mono);font-size:12px">' + sel.ev.join(' · ') + '</p></div>' +
+      '<div class="evcat mdim">' + groups.map(function (g) {
+        return '<h3>' + g + '</h3>' + evs.filter(function (x) { return x.dom === g; }).map(function (x) {
+          return '<div class="evrow' + (sel.ev.indexOf(x.e.n) !== -1 ? ' hit' : '') + '"><span class="n">' + x.e.n + '</span>' + badge(x.e.b, x.e.was) + '<span class="p">' + esc(x.e.p) + '</span></div>';
+        }).join('');
+      }).join('') + '</div>' +
+      '<div class="envelope">Every event carries: ' + esc(ENVELOPE) + '. No personal data: use a pseudonymous per-tenant ref instead.</div></div>';
+    document.getElementById('view').innerHTML = '<div class="mgrid">' + left + right + '</div>' +
+      '<div class="notes"><div><b>Badges</b><span>existing = already in the event catalog. extended = an existing event gains fields. new = added by this model. renames = replaces an older event. dormant = defined, not emitted yet.</span></div>' +
+      '<div><b>A metric without an event does not exist</b><span>If a number cannot be written as a formula over these events, an event or a field is missing. This list is the contract.</span></div>' +
+      '<div><b>Screens do not read the warehouse live</b><span>Dashboards read aggregates computed per tenant. The transactional database stays the source of truth.</span></div></div>';
+  }
+
+  function render() {
+    renderTabs();
+    var d = D.filter(function (x) { return x.id === state.tab; })[0];
+    document.getElementById('legend').hidden = !!d.metrics;
+    var ln = document.getElementById('legend-note'); ln.textContent = LEGEND_NOTE; ln.hidden = !LEGEND_NOTE;
+    if (d.metrics) renderMetrics(); else renderDomain(d);
+  }
+  function go(tab) { state.tab = tab; state.idx = 0; state.mode = 'cons'; try { history.replaceState(null, '', '#' + tab); } catch (e) {} render(); }
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-tab]'))) return go(t.getAttribute('data-tab'));
+    if ((t = e.target.closest('[data-go]'))) return go(t.getAttribute('data-go'));
+    if ((t = e.target.closest('[data-mode]'))) { state.mode = t.getAttribute('data-mode'); state.idx = 0; return renderSide(cur()); }
+    if ((t = e.target.closest('[data-idx]'))) { state.idx = +t.getAttribute('data-idx'); return renderSide(cur()); }
+    if ((t = e.target.closest('[data-metric]'))) { state.metric = t.getAttribute('data-metric'); go('metrics'); return; }
+    if ((t = e.target.closest('[data-m]'))) { state.metric = t.getAttribute('data-m'); renderMetrics(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-go]')) { e.preventDefault(); go(e.target.getAttribute('data-go')); }
+  });
+  function cur() { return D.filter(function (x) { return x.id === state.tab; })[0]; }
+  window.addEventListener('resize', function () { var d = cur(); if (!d.metrics) draw(d); });
+  window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (h && h !== state.tab && D.some(function (x) { return x.id === h; })) { state.tab = h; render(); } });
+  var h = location.hash.slice(1);
+  if (h && D.some(function (x) { return x.id === h; })) state.tab = h;
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { var d = cur(); if (!d.metrics) draw(d); });
+})();
+</script>
