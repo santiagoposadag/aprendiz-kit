@@ -33,6 +33,11 @@ frozen, unmodified. See `docs/ATTRIBUTION.md`.
 **`skills/doctor/`** — a deterministic check of everything the kit depends on, with the
 command that fixes each gap. See "What it assumes".
 
+**`skills/data-model-canvas/`** — defines a system's data model from its approved screens
+before any schema exists, and publishes it as an interactive page: entity diagram per
+domain, interface pieces, events, and a metrics catalog derived from them. Ends as a repo
+doc that is the contract.
+
 **`docs/`** — why each piece exists.
 
 ## Read these
